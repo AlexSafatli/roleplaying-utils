@@ -14,12 +14,10 @@ func main() {
 		if os.Args[1] == "spell" {
 			var spells []fiveEtoolsjson.Spell
 			for _, path := range os.Args[2:] {
-				pathSpells := fiveEtoolsjson.Get5etoolsSpells(path)
-				spells = append(spells, pathSpells...)
+				spells = append(spells, fiveEtoolsjson.Get5etoolsSpells(path)...)
 			}
-			i := rand.Intn(len(spells))
-			randomSpell := spells[i]
-			fmt.Printf("%d %s %s\n%s\n", i, randomSpell.Name, randomSpell.Source, randomSpell.Entries)
+			r := spells[rand.Intn(len(spells))]
+			fmt.Printf("%d %s %s\n%s\n", r.Level, r.Name, r.Source, r.Entries)
 		}
 	}
 }
