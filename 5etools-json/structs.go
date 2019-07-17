@@ -36,3 +36,21 @@ type Class struct {
 	Name   string `json:"name"`
 	Source string `json:"source"`
 }
+
+type Monster struct {
+	Name   string    `json:"name"`
+	Size   string    `json:"size"`
+	Source string    `json:"source"`
+	HP     MonsterHP `json:"hp"`
+	Dex    int       `json:"dex"`
+}
+
+type MonsterType struct {
+	Type string   `json:"type"`
+	Tags []string `json:"tags"`
+}
+
+type MonsterHP struct {
+	Average int    `json:"average"`
+	Formula string `json:"formula"`
+}
