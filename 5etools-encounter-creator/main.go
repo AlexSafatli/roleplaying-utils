@@ -38,13 +38,13 @@ func main() {
 	outputJsonPath := os.Args[1]
 	inputJsonFolder := os.Args[2]
 
-	jsonFiles, err := filepath.Glob(inputJsonFolder + string(os.PathSeparator) + "*.json")
+	j, err := filepath.Glob(inputJsonFolder + string(os.PathSeparator) + "*.json")
 	if err != nil {
 		panic(err)
 	}
 
 	monsters = make(map[string]*fiveEtoolsjson.Monster)
-	for _, path := range jsonFiles {
+	for _, path := range j {
 		var parsed []fiveEtoolsjson.Monster
 		parsed = fiveEtoolsjson.Get5etoolsMonsters(path)
 		for i := range parsed {
@@ -70,6 +70,7 @@ func main() {
 				var p Participant
 				p.Name = m.Name
 				p.Initiative = (m.Dex - 10) / 2
+				p.HP = m.HP.Average
 				fmt.Printf("Found monster '%s': %+v\n", m.Name, m)
 				for i = 0; i < monsterQty; i++ {
 					output.Participants = append(output.Participants, p)
