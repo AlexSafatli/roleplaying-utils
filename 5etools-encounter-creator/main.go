@@ -35,10 +35,7 @@ func main() {
 
 	var monsters map[string]*fiveEtoolsjson.Monster
 
-	outputJsonPath := os.Args[1]
-	inputJsonFolder := os.Args[2]
-
-	j, err := filepath.Glob(inputJsonFolder + string(os.PathSeparator) + "*.json")
+	j, err := filepath.Glob(os.Args[2] + string(os.PathSeparator) + "*.json")
 	if err != nil {
 		panic(err)
 	}
@@ -71,16 +68,18 @@ func main() {
 				p.Name = m.Name
 				p.Initiative = (m.Dex - 10) / 2
 				p.HP = m.HP.Average
-				fmt.Printf("Found monster '%s': %+v\n", m.Name, m)
+				fmt.Printf("Monster '%s' (%d): %+v\n", m.Name, monsterQty, m)
 				for i = 0; i < monsterQty; i++ {
 					output.Participants = append(output.Participants, p)
 				}
+			} else {
+				fmt.Printf("Could not find monster '%s'\n", monsterName)
 			}
 		}
 	}
 
 	file, _ := json.MarshalIndent(output, "", " ")
-	if err = ioutil.WriteFile(outputJsonPath, file, 0644); err != nil {
+	if err = ioutil.WriteFile(os.Args[1], file, 0644); err != nil {
 		panic(err)
 	}
 }
