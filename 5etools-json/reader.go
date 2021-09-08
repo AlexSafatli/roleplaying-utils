@@ -13,6 +13,10 @@ type MonsterList struct {
 	Monsters []Monster `json:"monster"`
 }
 
+type ItemList struct {
+	Items []Item `json:"item"`
+}
+
 func Get5etoolsSpells(path string) []Spell {
 	var spellList SpellList
 	dat, err := ioutil.ReadFile(path)
@@ -37,4 +41,17 @@ func Get5etoolsMonsters(path string) []Monster {
 		panic(err)
 	}
 	return monsterList.Monsters
+}
+
+func Get5etoolsItems(path string) []Item {
+	var itemList ItemList
+	dat, err := ioutil.ReadFile(path)
+	if err != nil {
+		panic(err)
+	}
+	err = json.Unmarshal(dat, &itemList)
+	if err != nil {
+		panic(err)
+	}
+	return itemList.Items
 }

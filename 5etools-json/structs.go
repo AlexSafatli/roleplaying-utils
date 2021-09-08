@@ -54,3 +54,22 @@ type MonsterHP struct {
 	Average int    `json:"average"`
 	Formula string `json:"formula"`
 }
+
+type Item struct {
+	Name       string        `json:"name"`
+	Source     string        `json:"source"`
+	Page       int           `json:"page"`
+	Rarity     string        `json:"rarity"`
+	Wondrous   bool          `json:"wondrous"`
+	Entries    []interface{} `json:"entries"`
+	Weight     int           `json:"weight"`
+	BaseItem   string        `json:"baseItem"`
+	Type       string        `json:"type"`
+	Property   []interface{} `json:"property"`
+	DamageType string        `json:"dmgType"`
+	Focus      []string      `json:"focus"`
+	Tier       string        `json:"tier"`
+	LootTables []interface{} `json:"lootTables"`
+	InSRD      bool          `json:"srd"`
+	Value      int           `json:"value"`
+}
