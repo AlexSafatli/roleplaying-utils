@@ -72,7 +72,7 @@ arr = d.roll_all(num_times)
 # Plot.
 plt.hist(arr)
 plt.title(roll)
-plt.ylabel('Number of Occurences per %d Samples' % (num_times))
+plt.ylabel('Number of Occurences per %d Samples' % num_times)
 pp = PdfPages(outname)
 plt.savefig(pp, format='pdf')
 pp.close()
