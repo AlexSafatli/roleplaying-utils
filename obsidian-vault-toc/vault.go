@@ -65,7 +65,7 @@ func dirs(root string) ([]string, error) {
 	return walk, err
 }
 
-func isSummarized(fi string, li []string) bool {
+func contains(fi string, li []string) bool {
 	for _, item := range li {
 		if fi == item {
 			return true
@@ -76,7 +76,7 @@ func isSummarized(fi string, li []string) bool {
 
 func allSummarized(files []*VaultFile, li []string) bool {
 	for _, f := range files {
-		if !isSummarized(f.Token, li) {
+		if !contains(f.Token, li) {
 			return false
 		}
 	}
@@ -123,8 +123,25 @@ func getTitle(file *VaultFile) string {
 	})
 	if title == "" {
 		title = titleize(noExt)
+		s := fmt.Sprintf("# %s\n%s", title, string(b))
+		err := ioutil.WriteFile(file.Path, []byte(s), 0644)
+		if err != nil {
+			panic(err)
+		}
 	}
 	return title
+}
+
+func writeDirectoryTOC(d, root, path string, files []*VaultFile) error {
+	mdText := fmt.Sprintf("# %s", d)
+	for _, f := range files {
+		mdText = fmt.Sprintf("%s\n- [%s](%s)", mdText, getTitle(f), f.Token)
+	}
+	err := ioutil.WriteFile(filepath.Join(root, path), []byte(mdText), 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func ReadVault(path string) (*Vault, error) {
@@ -147,9 +164,7 @@ func ReadVault(path string) (*Vault, error) {
 		vf.Path = path
 		vf.Token = filepath.Base(path)
 		var dir = filepath.Dir(path)
-		fi1, _ := os.Stat(dir)
-		fi2, _ := os.Stat(path)
-		if !os.SameFile(fi1, fi2) {
+		if filepath.Base(dir) != filepath.Base(vault.RootPath) {
 			vf.Parent = dir
 		}
 		vault.Files = append(vault.Files, vf)
@@ -193,23 +208,33 @@ func SummarizeVault(vault *Vault) error {
 	}
 	for d, files := range buckets {
 		var anchor ast.Node
+		if d != "" && d != "." {
+			dtoc := fmt.Sprintf("%s.md", d)
+			if err := writeDirectoryTOC(d, vault.RootPath, dtoc, files); err != nil {
+				return err
+			}
+		}
+
 		if len(files) == 0 || allSummarized(files, summarized) {
 			continue
 		}
-		if d != "" {
-			node := &ast.ListItem{}
+		if d != "" && d != "." {
+			dtoc := fmt.Sprintf("%s.md", d)
+			node := &ast.ListItem{BulletChar: '-'}
 			para := &ast.Paragraph{}
+			link := &ast.Link{Destination: []byte(dtoc)}
 			sublist := &ast.List{Tight: true}
 			node.SetChildren([]ast.Node{para, sublist})
-			para.SetChildren([]ast.Node{&ast.Text{Leaf: ast.Leaf{Literal: []byte(d)}}})
+			para.SetChildren([]ast.Node{&ast.Text{}, link, &ast.Text{}})
+			link.SetChildren([]ast.Node{&ast.Text{Leaf: ast.Leaf{Literal: []byte(d)}}})
 			ast.AppendChild(list, node)
 			anchor = sublist
 		} else {
-			anchor = list
+			continue
 		}
 		for _, file := range files {
-			if !isSummarized(file.Token, summarized) {
-				node := &ast.ListItem{}
+			if !contains(file.Token, summarized) {
+				node := &ast.ListItem{BulletChar: '-'}
 				para := &ast.Paragraph{}
 				link := &ast.Link{Destination: []byte(file.Token)}
 				node.SetChildren([]ast.Node{para})
@@ -219,6 +244,7 @@ func SummarizeVault(vault *Vault) error {
 			}
 		}
 	}
+	ast.Print(os.Stdout, summary)
 	mdRenderer := md.NewRenderer()
 	mdText := markdown.Render(summary, mdRenderer)
 	err = ioutil.WriteFile(vault.SummaryFile, mdText, 0644)
