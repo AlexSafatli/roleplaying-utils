@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
-	"github.com/gomarkdown/markdown/md"
 	"github.com/gomarkdown/markdown/parser"
 	"io/ioutil"
 	"os"
@@ -26,13 +24,13 @@ type VaultFile struct {
 	Token  string
 }
 
-func find(root, patt string) ([]string, error) {
-	var walk []string
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+func find(root, patt string) (walk []string, dirs []string, err error) {
+	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 		if info.IsDir() {
+			dirs = append(dirs, path)
 			return nil
 		}
 		if matched, err := filepath.Match(patt, filepath.Base(path)); err != nil {
@@ -43,26 +41,9 @@ func find(root, patt string) ([]string, error) {
 		return nil
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return walk, err
-}
-
-func dirs(root string) ([]string, error) {
-	var walk []string
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			walk = append(walk, path)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return walk, err
+	return
 }
 
 func contains(fi string, li []string) bool {
@@ -150,15 +131,11 @@ func ReadVault(path string) (*Vault, error) {
 	if _, err := os.Stat(summaryPath); !os.IsNotExist(err) {
 		vault.SummaryFile = summaryPath
 	}
-	directories, err := dirs(path)
+	paths, directories, err := find(path, "*.md")
 	if err != nil {
 		return vault, err
 	}
 	vault.Directories = directories
-	paths, err := find(path, "*.md")
-	if err != nil {
-		return vault, err
-	}
 	for _, path := range paths {
 		vf := &VaultFile{}
 		vf.Path = path
@@ -245,11 +222,11 @@ func SummarizeVault(vault *Vault) error {
 		}
 	}
 	ast.Print(os.Stdout, summary)
-	mdRenderer := md.NewRenderer()
-	mdText := markdown.Render(summary, mdRenderer)
-	err = ioutil.WriteFile(vault.SummaryFile, mdText, 0644)
-	if err != nil {
-		return err
-	}
+	//mdRenderer := md.NewRenderer()
+	//mdText := markdown.Render(summary, mdRenderer)
+	//err = ioutil.WriteFile(vault.SummaryFile, mdText, 0644)
+	//if err != nil {
+	//	return err
+	//}
 	return nil
 }
