@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/ast"
+	"github.com/gomarkdown/markdown/md"
 	"github.com/gomarkdown/markdown/parser"
 	"io/ioutil"
 	"os"
@@ -222,11 +224,11 @@ func SummarizeVault(vault *Vault) error {
 		}
 	}
 	ast.Print(os.Stdout, summary)
-	//mdRenderer := md.NewRenderer()
-	//mdText := markdown.Render(summary, mdRenderer)
-	//err = ioutil.WriteFile(vault.SummaryFile, mdText, 0644)
-	//if err != nil {
-	//	return err
-	//}
+	mdRenderer := md.NewRenderer()
+	mdText := markdown.Render(summary, mdRenderer)
+	err = ioutil.WriteFile(vault.SummaryFile, mdText, 0644)
+	if err != nil {
+		return err
+	}
 	return nil
 }
